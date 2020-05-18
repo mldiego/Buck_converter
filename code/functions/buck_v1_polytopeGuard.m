@@ -1,0 +1,115 @@
+function HA = buck_v1(~)
+
+
+%% Generated on 08-May-2020
+
+%-------------Automaton created from Component 'buckboost'-----------------
+
+%% Interface Specification:
+%   This section clarifies the meaning of state & input dimensions
+%   by showing their mapping to SpaceEx variable names. 
+
+% Component 1 (buckboost.buckboost_template_1):
+%  state x := [il; t; gt; vc]
+%  input u := [uDummy]
+
+%---------------Component buckboost.buckboost_template_1-------------------
+
+%----------------------------State charging--------------------------------
+
+%% equation:
+%   il' == (a00c * il + a01c * vc + b0c * Vs) & vc' == (a10c * il + a11c * vc + b1c * Vs) & t' == 1 & gt' == 1
+dynA = ...
+[-1288.4615384615381117328070104122,0,0,...
+-320.51282051282049678775365464389;0,0,0,0;0,0,0,0;...
+456.62100456621010380331426858902,0,0,-45.662100000000002353317540837452];
+dynB = ...
+[0;0;0;0];
+dync = ...
+[32051.28205128205081564374268055;1;1;0];
+dynamics = linearSys('linearSys', dynA, dynB, dync);
+
+%% equation:
+%   t >= 0 & t <= D*T & gt >= 0 & D >= 0 & D <= 1
+invA = ...
+[0,-1,0,0;0,1,0,0;0,0,-1,0;0,0,0,0;0,0,0,0];
+invb = ...
+[-0;1.2500249999999999453133628368739E-05;-0;0.75;0.25];
+invOpt = struct('A', invA, 'b', invb);
+inv = mptPolytope(invOpt);
+
+trans = {};
+%% equation:
+%   t' == 0
+resetA = ...
+[1,0,0,0;0,0,0,0;0,0,1,0;0,0,0,1];
+resetb = ...
+[0;0;0;0];
+reset = struct('A', resetA, 'b', resetb);
+
+%% equation:
+%   t >= D*T
+guardA = ...
+[0,-1,0,0];
+guardb = ...
+[-1.2500249999999999453133628368739E-05];
+guardOpt = struct('A', guardA, 'b', guardb);
+guard = mptPolytope(guardOpt);
+
+trans{1} = transition(guard, reset, 2, 'dummy', 'names');
+
+loc{1} = location('S1',1, inv, trans, dynamics);
+
+
+
+%---------------------------State discharging------------------------------
+
+%% equation:
+%   il' == (a00o * il + a01o * vc + b0o * Vs) & vc' == (a10o * il + a11o * vc + b1o * Vs) & t' == 1 & gt' == 1
+dynA = ...
+[-166.66666666666671403618238400668,0,0,...
+-320.51282051282049678775365464389;0,0,0,0;0,0,0,0;...
+456.62100456621010380331426858902,0,0,-45.662100000000002353317540837452];
+dynB = ...
+[0;0;0;0];
+dync = ...
+[0;1;1;0];
+dynamics = linearSys('linearSys', dynA, dynB, dync);
+
+%% equation:
+%   t >= 0 & t <= (1-D)*T & gt >= 0 & D >= 0 & D <= 1
+invA = ...
+[0,-1,0,0;0,1,0,0;0,0,-1,0;0,0,0,0;0,0,0,0];
+invb = ...
+[-0;4.1667500000000003823998409591134E-06;-0;0.75;0.25];
+invOpt = struct('A', invA, 'b', invb);
+inv = mptPolytope(invOpt);
+
+trans = {};
+%% equation:
+%   t' == 0
+resetA = ...
+[1,0,0,0;0,0,0,0;0,0,1,0;0,0,0,1];
+resetb = ...
+[0;0;0;0];
+reset = struct('A', resetA, 'b', resetb);
+
+%% equation:
+%   t >= (1-D)*T
+guardA = ...
+[0,-1,0,0];
+guardb = ...
+[-4.1667500000000003823998409591134E-06];
+guardOpt = struct('A', guardA, 'b', guardb);
+guard = mptPolytope(guardOpt);
+
+trans{1} = transition(guard, reset, 1, 'dummy', 'names');
+
+loc{2} = location('S2',2, inv, trans, dynamics);
+
+
+
+HA = hybridAutomaton(loc);
+
+
+end

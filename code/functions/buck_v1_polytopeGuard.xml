@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+  <component id="buckboost_template">
+    <param name="il" type="real" local="false" d1="1" d2="1" dynamics="any" />
+    <param name="vc" type="real" local="false" d1="1" d2="1" dynamics="any" />
+    <param name="t" type="real" local="false" d1="1" d2="1" dynamics="any" />
+    <param name="gt" type="real" local="false" d1="1" d2="1" dynamics="any" />
+    <param name="hop" type="label" local="true" />
+    <param name="a00o" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="a01o" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="a10o" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="a11o" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="a00c" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="a01c" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="a10c" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="a11c" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="T" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="D" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="b0o" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="b1o" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="b0c" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="b1c" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <param name="Vs" type="real" local="false" d1="1" d2="1" dynamics="const" />
+    <location id="1" name="charging" x="385.0" y="216.5" width="379.0" height="124.0">
+      <invariant>t &gt;= 0 &amp; t &lt;= D*T &amp; gt &gt;= 0 &amp; D &gt;= 0 &amp; D &lt;= 1</invariant>
+      <flow>il' == (a00c * il + a01c * vc + b0c * Vs) &amp; vc' == (a10c * il + a11c * vc + b1c * Vs) &amp; t' == 1 &amp; gt' == 1</flow>
+    </location>
+    <location id="2" name="discharging" x="921.5" y="219.5" width="405.0" height="126.0">
+      <invariant>t &gt;= 0 &amp; t &lt;= (1-D)*T &amp; gt &gt;= 0 &amp; D &gt;= 0 &amp; D &lt;= 1</invariant>
+      <flow>il' == (a00o * il + a01o * vc + b0o * Vs) &amp; vc' == (a10o * il + a11o * vc + b1o * Vs) &amp; t' == 1 &amp; gt' == 1</flow>
+    </location>
+    <transition source="1" target="2" timedriven="true">
+      <label>hop</label>
+      <guard>t &gt;= D*T</guard>
+      <assignment>t' == 0</assignment>
+      <labelposition x="-150.0" y="-75.0" width="284.0" height="72.0" />
+      <middlepoint x="625.25" y="127.5" />
+    </transition>
+    <transition source="2" target="1" timedriven="true">
+      <label>hop</label>
+      <guard>t &gt;= (1-D)*T</guard>
+      <assignment>t' == 0</assignment>
+      <labelposition x="-93.0" y="7.0" width="216.0" height="100.0" />
+      <middlepoint x="627.75" y="338.0" />
+    </transition>
+  </component>
+  <component id="buckboost">
+    <param name="il" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true" />
+    <param name="a00o" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="a01o" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="a10o" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="a11o" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="a00c" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="a01c" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="a10c" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="a11c" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="bounds" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="t" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true" />
+    <param name="gt" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true" />
+    <param name="D" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="T" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <param name="vc" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true" />
+    <param name="il0" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true" />
+    <param name="vc0" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true" />
+    <param name="Vs" type="real" local="false" d1="1" d2="1" dynamics="const" controlled="true" />
+    <bind component="buckboost_template" as="buckboost_template_1" x="496.0" y="118.0">
+      <map key="il">il</map>
+      <map key="a00o">-1.666666666666667e+02</map>
+      <map key="a01o">-3.205128205128205e+02</map>
+      <map key="a10o">4.566210045662101e+02</map>
+      <map key="a11o">-45.6621</map>
+      <map key="a00c">-1.288461538461538e+03</map>
+      <map key="a01c">-3.205128205128205e+02</map>
+      <map key="a10c">4.566210045662101e+02</map>
+      <map key="a11c">-45.6621</map>
+      <map key="t">t</map>
+      <map key="gt">gt</map>
+      <map key="T">1.6667e-05</map>
+      <map key="D">0.75</map>
+      <map key="b0o">0</map>
+      <map key="b1o">0</map>
+      <map key="b0c">3.205128205128205e+02</map>
+      <map key="b1c">0</map>
+      <map key="Vs">100</map>
+      <map key="vc">vc</map>
+    </bind>
+  </component>
+</sspaceex>
+
