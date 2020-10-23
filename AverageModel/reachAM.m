@@ -8,17 +8,18 @@ load('final_model.mat'); % Load weights
 layer1 = LayerS(W{1},b{1}','purelin'); % hidden layer #1
 layer2 = LayerS(W{2},b{2}','purelin'); % hidden layer #2
 layer3 = LayerS(W{3},b{3}','satlins'); % output layer (satlins)
-layer4 = LayerS(0.05,1,'purelin'); % Normalization
+% layer4 = LayerS(0.5,1,'purelin'); % Normalization
+layer4 = LayerS(0.5,0.5,'purelin'); % Normalization
 Layers = [layer1 layer2 layer3 layer4];
 Controller = FFNNS(Layers); % neural network controller
 
 %% Load plant model
 
 % Parameters
-C = 4.4e-006; % capacitor value
+C = 4.4e-6; % capacitor value
 L = 5e-5; % inductor value
 R = 4; % resistor value
-T = 0.00001;% sample time
+T = 0.0001;% sample time
 Vs = 10;% input (source) voltage
 Vref = 6;% reference voltage
 % Tmax = 1000*(1/R*C);% max simulation time
@@ -68,7 +69,7 @@ t = 0;
 dT = T;
 sim1 = [x0];
 for i=1:N
-    Vout = x0(1);
+    Vout = x0(2);
     inCont = [Vref - Vout;Vref;x0];
     yC = Controller.evaluate(inCont);
     [yy,tt,x0] = Plant.simulate([yC;yC],[t T],x0);
@@ -84,7 +85,7 @@ t = 0;
 dT = T;
 sim2 = [x0];
 for i=1:100
-    Vout = x0(1);
+    Vout = x0(2);
     inCont = [Vref - Vout;Vref;x0];
     yC = Controller.evaluate(inCont);
     [tV,y] = plant_cora.evaluate(x0,yC);
@@ -364,10 +365,10 @@ function inNN = input_to_Controller(Vref,init_set)
     l = length(init_set);
     inNN = [];
     for i = 1:l
-        out1 = init_set(i).affineMap([1 0],-Vref); % input 1 (Vref - Vout)
+        out1 = init_set(i).affineMap([0 1],-Vref); % input 1 (Vref - Vout)
         out1 = out1.affineMap(-eye(1),[]);
         out12 = out1.concatenate_with_vector(Vref); % input 1 + input 2
-        out = out12.concatenate(init_set(i)); % add inputs 3 and 4 (Vout,Iout)
+        out = out12.concatenate(init_set(i).affineMap([0 1;1 0],[])); % add inputs 3 and 4 (Vout,Iout)
         inNN = [inNN out];
     end
 end
