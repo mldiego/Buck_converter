@@ -5,8 +5,8 @@ clc;clear;close all
 %% Load Controller
 
 load('final_model.mat'); % Load weights
-layer1 = LayerS(W{1},b{1}','purelin'); % hidden layer #1
-layer2 = LayerS(W{2},b{2}','purelin'); % hidden layer #2
+layer1 = LayerS(W{1},b{1}','poslin'); % hidden layer #1
+layer2 = LayerS(W{2},b{2}','poslin'); % hidden layer #2
 layer3 = LayerS(W{3},b{3}','satlins'); % output layer (satlins)
 layer4 = LayerS(0.5,0.5,'purelin'); % Normalization
 Layers = [layer1 layer2 layer3 layer4];
