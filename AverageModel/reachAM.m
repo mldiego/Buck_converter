@@ -27,13 +27,12 @@ D = Vref / Vs;% duty cycle
 
 % Define ss matrices
 A_avg = [0, -(1/L); (1/C), -(1/(R*C))];% switch closed
-B_avg = [(D/L); 0];
+B_avg = [Vs*(D/L); 0];
 C = eye(2);
 D = [0;0];
 
 % Create plant
 controlPeriod = T;
-% nSteps = 5;
 nSteps = 10;
 reachStep = controlPeriod/nSteps;
 Plant = LinearODE(A_avg, B_avg, C, D, controlPeriod,nSteps); % Linear ODE plant
@@ -46,26 +45,33 @@ nlPlant = NonLinearODE(2,1,@dynamicsAM,reachStep,controlPeriod,C); % Nonlinear O
 N = 25; % Number of control steps to simulate the system
 
 lb = [0;0];
-ub = [0.1;0.1];
-% init_set = Star(lb,ub);
-% lb = [0;0]
-% ub1 = [0.01;0.01];
+ub = [0.3;0.3];
 
 %% Simulation (MATLAB & CORA)
 
 % Sim (CORA)
-x0 = [0.025;0.025];
+% n_sim = 100; % Number of simulations
+n_sim = 25;
+step_sim = N; % Number of simulation steps
+X0s = lb'+rand(n_sim,2).*(ub'-lb'); % Set of random initial points to simulate
 t = 0;
 dT = T;
-sim2 = [x0];
-for i=1:100
-    Vout = x0(2);
-    inCont = [Vref - Vout;Vref;x0];
-    yC = Controller.evaluate(inCont);
-    [tV,y] = plant_cora.evaluate(x0,yC);
-    x0 = y(end,:)';
-    t = t+dT;
-    sim2 = [sim2 x0];
+sim2 = zeros(n_sim,2,step_sim+1);
+sim1 = zeros(n_sim,2,step_sim*nSteps);
+for j=1:n_sim
+    x0 = X0s(j,:)';
+    sim2(j,:,1) = x0;
+    for i=1:step_sim
+        Vout = x0(2);
+        inCont = [Vref - Vout;Vref;x0(1:2)];
+        yC = Controller.evaluate(inCont);
+        [tV,y] = plant_cora.evaluate(x0,yC);
+        x0 = y(end,:)';
+        x0a = y';
+        t = t+dT;
+        sim2(j,:,i+1) = x0;
+        sim1(j,:,((i-1)*(nSteps)+1):i*nSteps+1) = x0a;
+    end
 end
 
 %% Compare 1 step reachability (only involving plant models)
@@ -207,11 +213,12 @@ try
     reachAll_1 = [init_set];
     for i=1:N
         inNN = input_to_Controller(Vref,init_set);
-        outC = Controller.reach(inNN,'approx-star');
-        if outC.nVar > 1000
-            outC = outC.getBox;
-            outC = outC.toStar;
-        end
+        outC = Controller.reach(inNN,'exact-star');
+%         if outC.nVar > 1000
+%             outC = outC.getBox;
+%             outC = outC.toStar;
+%         end
+        outC = outC(1);
         init_set = plant1.simReach('direct', init_set, outC, reachStep, nSteps); % reduce the order (basic vectors) in order for the code to finish
         reachAll_1 = [reachAll_1 init_set];
         init_set = init_set(end);
@@ -358,18 +365,19 @@ end
 % title('Simulations');
 % legend('nnv','cora');
 % Plot Reach Sets
-try
-    figure;
-    hold on;
-%     Star.plotBoxes_2D_noFill(reachAll_1,1,2,'b');
-    plot(sim2(1,:),sim2(2,:),'r');
-    Star.plotBoxes_2D_noFill(reachSet_1,1,2,'b');
-    xlabel('x_1')
-    ylabel('x_2');
-    title('Method 1 - NNV (direct)');
-catch
-    disp('Method 1 failed, no plots')
+f = figure;
+hold on;
+for p=1:n_sim
+    simP = sim1(p,:,:);
+    nl = size(simP,3);
+    simP = reshape(simP,[2, nl]);
+    plot(simP(1,:),simP(2,:),'r');
 end
+Star.plotBoxes_2D_noFill(reachAll_1,1,2,'b');
+xlabel('x_1')
+ylabel('x_2');
+title('Average Model');
+saveas(f,'AvgModel_reach.png');
 
 % try
 %     figure;
