@@ -62,7 +62,7 @@ nlPlant = NonLinearODE(6,1,@dynamicsMFAM,reachStep,controlPeriod,C); % Nonlinear
 N = 25; % Number of control steps to simulate the system
 
 lb = [0;0;0;0;0;0];
-ub = [0.25;0.25;0.1;0.1;0.1;0.1];
+ub = [0.3;0.3;0.1;0.1;0.1;0.1];
 init_set = Star(lb,ub);
 
 %% Simulation (MATLAB & CORA)
