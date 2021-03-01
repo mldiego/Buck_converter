@@ -44,7 +44,7 @@ C=eye(size(A));
 D=[0 0 0 0 0 0]';
 
 % Initial state
-% x0=[0 0 0 0 0 0]'; % [i_L0 v_C0 i_L1Real i_L1Imag v_C1Real v_C1Imag]
+% x0=[0 0 0 0 0 0]'; % [i_L0 v_C0 i_L1Real i_L1Imag v_C1Real v_C1Imag\begin]
 
 
 % Create plant

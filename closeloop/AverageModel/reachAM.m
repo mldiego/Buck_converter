@@ -354,17 +354,52 @@ end
 
 %% Visualize results
 
-% % Plot Simulations
-% 
-% figure;
-% hold on;
-% % plot(sim1(1,:),sim1(2,:),'b');
-% plot(sim2(1,:),sim2(2,:),'r');
-% xlabel('x_1')
-% ylabel('x_2');
-% title('Simulations');
-% legend('nnv','cora');
+timeV = 0:reachStep:controlPeriod;
 % Plot Reach Sets
+f = figure;
+hold on;
+for p=1:n_sim
+    simP = sim1(p,:,:);
+    nl = size(simP,3);
+    simP = reshape(simP,[dim, nl]);
+    plot(simP(1,:),simP(2,:),'r');
+end
+Star.plotBoxes_2D_noFill(reachAll,1,2,'b');
+xlabel('x_1')
+ylabel('x_2');
+title('Open Loop - MFAM (hw)');
+saveas(f,'OpenLoop_MFAM_reach_hw.png');
+
+% Plot reach sets vs time (Current)
+f = figure;
+hold on;
+for p=1:n_sim
+    simP = sim1(p,:,:);
+    nl = size(simP,3);
+    simP = reshape(simP,[dim, nl]);
+    plot(timeV,simP(1,:),'r');
+end
+Star.plotRanges_2D(reachAll,1,timeV,'b');
+xlabel('Time (seconds)')
+ylabel('Current');
+title('Open Loop - MFAM (hw)');
+saveas(f,'OpenLoop_MFAM_reachI_hw.png');
+
+% Plot reach sets vs time (Voltage)
+f = figure;
+hold on;
+for p=1:n_sim
+    simP = sim1(p,:,:);
+    nl = size(simP,3);
+    simP = reshape(simP,[dim, nl]);
+    plot(timeV,simP(2,:),'r');
+end
+Star.plotRanges_2D(reachAll,2,timeV,'b');
+xlabel('Time (seconds)')
+ylabel('Voltage');
+title('Open Loop - MFAM (hw)');
+saveas(f,'OpenLoop_MFAM_reachV_hw.png');
+
 f = figure;
 hold on;
 for p=1:n_sim
@@ -378,54 +413,6 @@ xlabel('x_1')
 ylabel('x_2');
 title('Average Model');
 saveas(f,'AvgModel_reach.png');
-
-% try
-%     figure;
-%     hold on;
-%     Star.plotBoxes_2D_noFill(plant2.intermediate_reachSet,1,2,'b');
-%     Star.plotBoxes_2D_noFill(reachSet_2,1,2,'--m');
-%     xlabel('x_1')
-%     ylabel('x_2');
-%     title('Method 2 - CORA (standard)');
-% catch
-%     disp('Method 2 failed, no plots')
-% end
-% 
-% try
-%     figure;
-%     hold on;
-%     Star.plotBoxes_2D_noFill(plant3.intermediate_reachSet,1,2,'b');
-%     Star.plotBoxes_2D_noFill(reachSet_3,1,2,'--m');
-%     xlabel('x_1')
-%     ylabel('x_2');
-%     title('Method 3 - CORA (adap)');
-% catch
-%     disp('Method 3 failed, no plots')
-% end
-% 
-% try
-%     figure;
-%     hold on;
-%     Star.plotBoxes_2D_noFill(reachAll_5,1,2,'b');
-%     Star.plotBoxes_2D_noFill(reachSet_5,1,2,'--m');
-%     xlabel('x_1')
-%     ylabel('x_2');
-%     title('Method 5 - NNV (direct)');
-% catch
-%     disp('Method 5 failed, no plots')
-% end
-% 
-% try
-%     figure;
-%     hold on;
-%     Star.plotBoxes_2D_noFill(nlPlant.intermediate_reachSet,1,2,'b');
-%     Star.plotBoxes_2D_noFill(reachSet_6,1,2,'--m');
-%     xlabel('x_1');
-%     ylabel('x_2');
-%     title('Methodd 6 - Nonlinear');
-% catch
-%     disp('NonLinear approx method failed, no plots')
-% end
 
 %% Helper Functions
 
