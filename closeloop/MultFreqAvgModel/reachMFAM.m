@@ -37,6 +37,7 @@ A3=[0 0;0 0;0 0;0 0];
 A4=[0 ws -1/L 0;-ws 0 0 -1/L;1/C 0 -1/(R*C) ws;0 1/C -ws -1/(R*C)];
 
 % State-space matrices
+dim = 6;
 A=[A1 A2;A3 A4];
 B=[Du/L;0;D_R1/L;D_I1/L;0;0];
 B = Vs*B;
@@ -71,14 +72,13 @@ init_set = Star(lb,ub);
 % n_sim = 100; % Number of simulations
 n_sim = 25;
 step_sim = N; % Number of simulation steps
-X0s = lb'+rand(n_sim,6).*(ub'-lb'); % Set of random initial points to simulate
+X0s = lb'+rand(n_sim,dim).*(ub'-lb'); % Set of random initial points to simulate
 t = 0;
 dT = T;
-sim2 = zeros(n_sim,6,step_sim+1);
-sim1 = zeros(n_sim,6,step_sim*nSteps);
+sim2 = zeros(n_sim,dim,step_sim+1);
+sim1 = zeros(n_sim,dim,step_sim*nSteps);
 for j=1:n_sim
     x0 = X0s(j,:)';
-%     sim1(j,:,1) = x0;
     sim2(j,:,1) = x0;
     for i=1:step_sim
         Vout = x0(2);
@@ -94,18 +94,19 @@ for j=1:n_sim
 end
 
 %% Reachability analysis 1 (NNV, direct and approx-star NN)
+disp(' ');
+disp('---------------------------------------------------');
+disp('Method 1 - NNV')
+init_set = Star(lb,ub);
+plant1 = Plant;
 
 reachSet = [init_set];
-reachAll = [init_set];
+reachAll = [];
 for i=1:N
     inNN = input_to_Controller(Vref,init_set);
     outC = Controller.reach(inNN,'approx-star');
-    if outC.nVar > 1000
-        outC = outC.getBox;
-        outC = outC.toStar;
-    end
-    init_set = Plant.simReach('direct', init_set, outC, reachStep, nSteps); % reduce the order (basic vectors) in order for the code to finish
-    reachAll = [reachAll init_set];
+    init_set = plant1.simReach('direct', init_set, outC, reachStep, nSteps); % reduce the order (basic vectors) in order for the code to finish
+    reachAll = [reachAll init_set(1:end-1)];
     init_set = init_set(end);
     reachSet = [reachSet init_set];
     if init_set.nVar > 1000
@@ -113,24 +114,55 @@ for i=1:N
         init_set = init_set.toStar;
     end
 end
+reachAll = [reachAll init_set]; % Add last reach set 
 
 %% Visualize results
 
+timeV = 0:reachStep:(controlPeriod*N);
 % Plot Reach Sets
 f = figure;
 hold on;
 for p=1:n_sim
     simP = sim1(p,:,:);
     nl = size(simP,3);
-    simP = reshape(simP,[6, nl]);
+    simP = reshape(simP,[dim, nl]);
     plot(simP(1,:),simP(2,:),'r');
 end
 Star.plotBoxes_2D_noFill(reachAll,1,2,'b');
 xlabel('x_1')
 ylabel('x_2');
-title('Multi Frequency Average Model');
-saveas(f,'MultiFrequencyAM_reach.png');
+title('Close Loop - MFAM (hw)');
+saveas(f,'CloseLoop_MFAM_reach_.png');
 
+% Plot reach sets vs time (Current)
+f = figure;
+hold on;
+for p=1:n_sim
+    simP = sim1(p,:,:);
+    nl = size(simP,3);
+    simP = reshape(simP,[dim, nl]);
+    plot(timeV,simP(1,:),'r');
+end
+Star.plotRanges_2D(reachAll,1,timeV,'b');
+xlabel('Time (seconds)')
+ylabel('Current');
+title('Close Loop - MFAM (hw)');
+saveas(f,'CloseLoop_MFAM_reachI_hw.png');
+
+% Plot reach sets vs time (Voltage)
+f = figure;
+hold on;
+for p=1:n_sim
+    simP = sim1(p,:,:);
+    nl = size(simP,3);
+    simP = reshape(simP,[dim, nl]);
+    plot(timeV,simP(2,:),'r');
+end
+Star.plotRanges_2D(reachAll,2,timeV,'b');
+xlabel('Time (seconds)')
+ylabel('Voltage');
+title('Close Loop - MFAM (hw)');
+saveas(f,'CloseLoop_MFAM_reachV_hw.png');
 
 
 %% Helper Functions

@@ -26,6 +26,7 @@ Vref = 6;% reference voltage
 D = Vref / Vs;% duty cycle        
 
 % Define ss matrices
+dim = 2;
 A_avg = [0, -(1/L); (1/C), -(1/(R*C))];% switch closed
 B_avg = [Vs*(D/L); 0];
 C = eye(2);
@@ -37,7 +38,7 @@ nSteps = 10;
 reachStep = controlPeriod/nSteps;
 Plant = LinearODE(A_avg, B_avg, C, D, controlPeriod,nSteps); % Linear ODE plant
 plant_cora = LinearODE_cora(A_avg, B_avg, C, D, reachStep, controlPeriod); % LinearODE cora plant
-nlPlant = NonLinearODE(2,1,@dynamicsAM,reachStep,controlPeriod,C); % Nonlinear ODE plant 
+% nlPlant = NonLinearODE(2,1,@dynamicsAM,reachStep,controlPeriod,C); % Nonlinear ODE plant 
 
 
 %% Define reachability parameters
@@ -74,287 +75,32 @@ for j=1:n_sim
     end
 end
 
-%% Compare 1 step reachability (only involving plant models)
-% Make sure the end result is the same for all of them
-% First comparison (input = 0)
-% 
-% outC = Star(0,0);
-% plantR1 = plant_cora; % Linear ode cora plant
-% R1 = plantR1.stepReachStar(init_set,outC);
-% R1a = plantR1.intermediate_reachSet;
-% plantR2 = nlPlant; % nonliear ode cora plant
-% R2 = plantR2.stepReachStar(init_set,outC);
-% R2a = plantR2.intermediate_reachSet;
-% plantR3 = Plant; % Linear ode NNV model
-% R3 = plantR3.simReach('direct',init_set,outC,reachStep,nSteps);
-% % Plot all sets
-% figure;
-% Star.plots(R1a,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plots(R2a,'m');
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plots(R3,'b');
-% title('Linear ODE (NNV)');
-% % Plot last set (control period set)
-% figure;
-% Star.plots(R1,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plots(R2,'m'); % Exact method for this one fails sometimes
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plots(R3(end),'b');
-% title('Linear ODE (NNV)');
-% % Plot approx. last set (control period set)
-% figure;
-% Star.plotBoxes_2D(R1,1,2,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plotBoxes_2D(R2,1,2,'m');
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plotBoxes_2D(R3(end),1,2,'b');
-% title('Linear ODE (NNV)');
-% 
-% % Second comparison (input = 1)
-% 
-% outC = Star(1,1);
-% plantR1 = plant_cora; % Linear ode cora plant
-% R1 = plantR1.stepReachStar(init_set,outC);
-% R1a = plantR1.intermediate_reachSet;
-% plantR2 = nlPlant; % nonliear ode cora plant
-% R2 = plantR2.stepReachStar(init_set,outC);
-% R2a = plantR2.intermediate_reachSet;
-% plantR3 = Plant; % Linear ode NNV model
-% R3 = plantR3.simReach('direct',init_set,outC,reachStep,nSteps);
-% % Plot all sets
-% figure;
-% Star.plots(R1a,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plots(R2a,'m');
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plots(R3,'b');
-% title('Linear ODE (NNV)');
-% % Plot last set (control period set)
-% figure;
-% Star.plots(R1,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plots(R2,'m'); % Exact method for this one fails sometimes
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plots(R3(end),'b');
-% title('Linear ODE (NNV)');
-% % Plot approx. last set (control period set)
-% figure;
-% Star.plotBoxes_2D(R1,1,2,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plotBoxes_2D(R2,1,2,'m');
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plotBoxes_2D(R3(end),1,2,'b');
-% title('Linear ODE (NNV)');
-% 
-% % Third comparison (input = 0.1)
-% 
-% outC = Star(0.1,0.1);
-% plantR1 = plant_cora; % Linear ode cora plant
-% R1 = plantR1.stepReachStar(init_set,outC);
-% R1a = plantR1.intermediate_reachSet;
-% plantR2 = nlPlant; % nonliear ode cora plant
-% R2 = plantR2.stepReachStar(init_set,outC);
-% R2a = plantR2.intermediate_reachSet;
-% plantR3 = Plant; % Linear ode NNV model
-% R3 = plantR3.simReach('direct',init_set,outC,reachStep,nSteps);
-% % Plot all sets
-% figure;
-% Star.plots(R1a,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plots(R2a,'m');
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plots(R3,'b');
-% title('Linear ODE (NNV)');
-% % Plot last set (control period set)
-% figure;
-% Star.plots(R1,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plots(R2,'m'); % Exact method for this one fails sometimes
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plots(R3(end),'b');
-% title('Linear ODE (NNV)');
-% % Plot approx. last set (control period set)
-% figure;
-% Star.plotBoxes_2D(R1,1,2,'r');
-% title('Linear ODE (CORA)');
-% figure;
-% Star.plotBoxes_2D(R2,1,2,'m');
-% title('Nonlinear ODE (CORA)')
-% figure;
-% Star.plotBoxes_2D(R3(end),1,2,'b');
-% title('Linear ODE (NNV)');
-
 %% Reachability analysis 1 (NNV, direct and approx-star NN)
 disp(' ');
 disp('---------------------------------------------------');
 disp('Method 1 - NNV')
 init_set = Star(lb,ub);
 plant1 = Plant;
-try
-    reachSet_1 = [init_set];
-    reachAll_1 = [init_set];
-    for i=1:N
-        inNN = input_to_Controller(Vref,init_set);
-        outC = Controller.reach(inNN,'exact-star');
-%         if outC.nVar > 1000
-%             outC = outC.getBox;
-%             outC = outC.toStar;
-%         end
-        outC = outC(1);
-        init_set = plant1.simReach('direct', init_set, outC, reachStep, nSteps); % reduce the order (basic vectors) in order for the code to finish
-        reachAll_1 = [reachAll_1 init_set];
-        init_set = init_set(end);
-        reachSet_1 = [reachSet_1 init_set];
-        if init_set.nVar > 1000
-            init_set = init_set.getBox;
-            init_set = init_set.toStar;
-        end
+
+reachSet = [init_set];
+reachAll = [];
+for i=1:N
+    inNN = input_to_Controller(Vref,init_set);
+    outC = Controller.reach(inNN,'approx-star');
+    init_set = plant1.simReach('direct', init_set, outC, reachStep, nSteps); % reduce the order (basic vectors) in order for the code to finish
+    reachAll = [reachAll init_set(1:end-1)];
+    init_set = init_set(end);
+    reachSet = [reachSet init_set];
+    if init_set.nVar > 1000
+        init_set = init_set.getBox;
+        init_set = init_set.toStar;
     end
-catch e
-    disp(' ');
-    warning("Method 1 failed"); pause(0.01);
-    fprintf(2,'THERE WAS AN ERROR. THE MESSAGE WAS:\n\n%s',getReport(e));
 end
-% This method is really not working well
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%% Reachability analysis 2 (CORA-standard, approx)
-% disp(' ');
-% disp('---------------------------------------------------');
-% disp('Method 2 - CORA');
-% init_set = Star(lb,ub);
-% plant2 = plant_cora;
-% try
-%     reachSet_2 = [init_set];
-%     for i=1:N
-%         inNN = input_to_Controller(Vref,init_set);
-%         outC = Controller.reach(inNN,'approx-star');
-%         init_set = plant2.stepReachStar(init_set,outC);
-% %         init_set = Star.get_convex_hull(init_set);
-%         reachSet_2 = [reachSet_2 init_set];
-%     end
-% catch e
-%     disp(' ');
-%     warning("Method 2 failed"); pause(0.01);
-%     fprintf(2,'THERE WAS AN ERROR. THE MESSAGE WAS:\n\n%s',getReport(e));
-% end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%% Reachability analysis 3 (CORA-adap, approx)
-% disp(' ');
-% disp('---------------------------------------------------');
-% disp('Method 3 - CORA');
-% init_set = Star(lb,ub);
-% plant3 = plant_cora;
-% plant3.set_linAlg('adap');
-% try
-%     reachSet_3 = [init_set];
-%     for i=1:N
-%         inNN = input_to_Controller(Vref,init_set);
-%         outC = Controller.reach(inNN,'approx-star');
-%         init_set = plant3.stepReachStar(init_set,outC);
-% %         init_set = Star.get_convex_hull(init_set);
-%         reachSet_3 = [reachSet_3 init_set];
-%     end
-% catch e
-%     disp(' ');
-%     warning("Method 3 failed"); pause(0.01);
-%     fprintf(2,'THERE WAS AN ERROR. THE MESSAGE WAS:\n\n%s',getReport(e));
-% end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%% Reachability analysis 5 (NNV, direct, approx)
-% disp(' ');
-% disp('---------------------------------------------------');
-% disp('Method 5 - NNV'); % Not really exact tho. Ranges estimmated in Plant.simReach (minkowski sum for plant reachability)
-% init_set = Star(lb,ub1);
-% plant5 = Plant;
-% try
-%     reachSet_5 = [init_set];
-%     reachAll_5 = [init_set];
-%     for i=1:N
-%         inNN = input_to_Controller(Vref,init_set);
-%         outC = Controller.reach(inNN,'approx-star');
-%         if outC.nVar > 1000
-%             outC = outC.getBox;
-%             outC = outC.toStar;
-%         end
-%         init_set = plant5.simReach('direct',init_set,outC,reachStep,nSteps);
-%         reachAll_5 = [reachAll_5 init_set];
-%         init_set = init_set(end);
-% %         init_set = Star.get_convex_hull(init_set);
-%         reachSet_5 = [reachSet_5 init_set];
-%         if init_set.nVar > 1000
-%             init_set = init_set.getBox;
-%             init_set = init_set.toStar;
-%         end
-%     end
-% catch e
-%     disp(' ');
-%     warning('Method 5 failed'); pause(0.01);
-%     fprintf(2,'THERE WAS AN ERROR. THE MESSAGE WAS:\n\n%s',getReport(e));
-% end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%% Reachability analysis 6 (nonlinear)
-% disp(' ');
-% disp('---------------------------------------------------');
-% disp('Method 6 - nonlinear')
-% init_set = Star(lb,ub);
-% try
-%     reachSet_6 = [init_set];
-%     for i=1:N
-%         inNN = input_to_Controller(Vref,init_set);
-%         outC = Controller.reach(inNN,'approx-star');
-%         init_set = nlPlant.stepReachStar(init_set,outC);
-%         reachSet_6 = [reachSet_6 init_set];
-%     end
-% catch e
-%     disp(' ');
-%     warning('Nonlinear method failed'); pause(0.01);
-%     fprintf(2,'THERE WAS AN ERROR. THE MESSAGE WAS:\n\n%s',getReport(e));
-% end
-
-
-
+reachAll = [reachAll init_set]; % Add last reach set 
 
 %% Visualize results
 
-timeV = 0:reachStep:controlPeriod;
+timeV = 0:reachStep:(controlPeriod*N);
 % Plot Reach Sets
 f = figure;
 hold on;
@@ -367,8 +113,8 @@ end
 Star.plotBoxes_2D_noFill(reachAll,1,2,'b');
 xlabel('x_1')
 ylabel('x_2');
-title('Open Loop - MFAM (hw)');
-saveas(f,'OpenLoop_MFAM_reach_hw.png');
+title('Close Loop - AM (hw)');
+saveas(f,'CloseLoop_AM_reach_.png');
 
 % Plot reach sets vs time (Current)
 f = figure;
@@ -382,8 +128,8 @@ end
 Star.plotRanges_2D(reachAll,1,timeV,'b');
 xlabel('Time (seconds)')
 ylabel('Current');
-title('Open Loop - MFAM (hw)');
-saveas(f,'OpenLoop_MFAM_reachI_hw.png');
+title('Close Loop - AM (hw)');
+saveas(f,'CloseLoop_AM_reachI_hw.png');
 
 % Plot reach sets vs time (Voltage)
 f = figure;
@@ -397,22 +143,9 @@ end
 Star.plotRanges_2D(reachAll,2,timeV,'b');
 xlabel('Time (seconds)')
 ylabel('Voltage');
-title('Open Loop - MFAM (hw)');
-saveas(f,'OpenLoop_MFAM_reachV_hw.png');
+title('Close Loop - AM (hw)');
+saveas(f,'CloseLoop_AM_reachV_hw.png');
 
-f = figure;
-hold on;
-for p=1:n_sim
-    simP = sim1(p,:,:);
-    nl = size(simP,3);
-    simP = reshape(simP,[2, nl]);
-    plot(simP(1,:),simP(2,:),'r');
-end
-Star.plotBoxes_2D_noFill(reachAll_1,1,2,'b');
-xlabel('x_1')
-ylabel('x_2');
-title('Average Model');
-saveas(f,'AvgModel_reach.png');
 
 %% Helper Functions
 
