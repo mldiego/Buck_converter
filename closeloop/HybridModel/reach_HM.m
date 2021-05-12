@@ -14,91 +14,83 @@ Layers = [layer1 layer2 layer3 layer4];
 % Layers = [layer1 layer2 layer3];
 Controller = FFNNS(Layers); % neural network controller
 
-% Load hybrid automata
-% buck = HybridA(5,1,buck_v2,2);
-% This model does not really allow for any inputs, and it is not the same
-% as the one that we have in Simulink (????)
-% Use this better, need to attempt to model it: http://www.taylortjohnson.com/research/bak2017sttt.pdf
-
 % Load hybrid Automata
-HA = HybridA(4,1,Buck_Converter,3);
+HA = HybridA(3,1,HM_hardware,3);
 HA.options.enclose = {'pca'};
-Vs = 10;% input (source) voltage (Average model)
-Vref = 6;% reference voltage
-% Or (simulink model)
-% Vs = 30;
-% Vref = 10;
+T = 1/60000; % sample time
+Vs = 100; % source voltage
+Vref = 48; % reference voltage
 
 %% Set reachability
-T = 0.00001;% sample time
 controlPeriod = T;
 nSteps = 5;
 reachStep = controlPeriod/nSteps;
-out_mat = [0 1 0 0; 1 0 0 0];
+out_mat = [1 0 0; 0 1 0];
+tfinal = T*1800;
+% tfinal = 0.03; % Ideally, which corresponds to T*1800
 % N = 20; % Number of steps to simulate the system
-% N = 5 % (5,10 steps works);
-N = 40;
+% N = 10; % (5,10 steps works);
+% N = 40;
 
-lb = [0;0;1;0];
-ub = [0.05;0.05;1;0];
+lb = [0;0;0];
+ub = [0.05;0.05;0];
 init_set = Star(lb,ub);
 
 % Example (one set for the plant)
-HA.set_tFinal(T); % set control period
+HA.set_tFinal(tfinal); % set control period
 HA.set_timeStep(reachStep); % reachability step
 inp_set = Star(1,1); % same mode as initial state
 S = HA.stepReachStar(init_set,inp_set);
-
-%% Reachability analysis
-disp(' ');
-disp('---------------------------------------------------');
-disp('Method 1 - Hybrid Automata')
-init_set = Star(lb,ub);
-try
-    reachSet_1 = [init_set];
-    all_out = [];
-    for i=1:N
-        inNN = input_to_Controller(Vref,init_set,out_mat);
-        outC = Controller.reach(inNN,'approx-star');
-        init_set = HA.stepReachStar(init_set,outC);
-        reachSet_1 = [reachSet_1 init_set];
-        all_out = [all_out outC];
-    end
-catch e
-    disp(' ');
-    warning('Hybrid Automata method failed'); pause(0.01);
-    fprintf(2,'THERE WAS AN ERROR. THE MESSAGE WAS:\n\n%s',getReport(e));
-end
+Sall = [init_set HA.intermediate_reachSet];
+% %% Reachability analysis
+% disp(' ');
+% disp('---------------------------------------------------');
+% disp('Method 1 - Hybrid Automata')
+% init_set = Star(lb,ub);
+% try
+%     reachSet_1 = [init_set];
+%     all_out = [];
+%     for i=1:N
+%         inNN = input_to_Controller(Vref,init_set,out_mat);
+%         outC = Controller.reach(inNN,'approx-star');
+%         init_set = HA.stepReachStar(init_set,outC);
+%         reachSet_1 = [reachSet_1 init_set];
+%         all_out = [all_out outC];
+%     end
+% catch e
+%     disp(' ');
+%     warning('Hybrid Automata method failed'); pause(0.01);
+%     fprintf(2,'THERE WAS AN ERROR. THE MESSAGE WAS:\n\n%s',getReport(e));
+% end
 
 
 %% Visualize results
-figure;
+timeV = 0:reachStep:tfinal;
+f = figure;
 hold on;
-Star.plotBoxes_2D_noFill(reachSet_1,1,2,'b');
+Star.plotBoxes_2D_noFill(Sall,1,2,'b');
 xlabel('i')
 ylabel('V');
-title('HA reachability');
+title('Open Loop - hybrid (hw)');
+saveas(f,'OpenLoop_hybrid_reach_hw.png');
 
-figure;
+% Plot reach sets vs time (Current)
+f = figure;
 hold on;
-Star.plotBoxes_2D_noFill(reachSet_1,4,3,'b');
-xlabel('time (s)')
-ylabel('x_3');
-title('HA reachability');
+Star.plotRanges_2D(Sall,1,timeV,'b');
+xlabel('Time (seconds)')
+ylabel('Current');
+title('Open Loop - hybrid (hw)');
+saveas(f,'OpenLoop_hybrid_reachI_hw.png');
 
-figure;
+% Plot reach sets vs time (Voltage)
+f = figure;
 hold on;
-Star.plotBoxes_2D_noFill(all_out(1),1,1,'b');
-xlabel('x_1')
-ylabel('x_1');
-title('Controller reachability');
-
-% Compute ranges of controller output
-m = zeros(40,1);
-M = zeros(40,1);
-for i=1:40
-    [m(i), M(i)] = all_out(i).getRanges;
-end
+Star.plotRanges_2D(Sall,2,timeV,'b');
+xlabel('Time (seconds)')
+ylabel('Voltage');
+title('Open Loop - Hybrid (hw)');
+saveas(f,'OpenLoop_hybrid_reachV_hw.png');
 
 %% Helper Functions
 
@@ -113,16 +105,3 @@ function inNN = input_to_Controller(Vref,init_set,out_mat)
         inNN = [inNN out];
     end
 end
-
-
-%% Notes & Problems & Errors
-
-% CORA does not allow for the system to have outputs... Weird, right?
-% Need to figure out how to encode this in our class... My initial guess
-% would be to store the output matrix for each location, and used that with
-% affineMap in NNV... 
-
-% For now, set C empty and just evaluate the states as we usually do
-
-% Only got the guard to work with conHyperplane... Need to learn which one
-% is better in general. Invariants cannot be empty, so just write something
