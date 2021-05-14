@@ -167,21 +167,21 @@ Star.plotRanges_2D(cont_reach,1,1:1:N,'b');
 hold on;
 plot(control_outputs,'r');
 title('Control Outputs');
-saveas(f,'AM_controlActions.png');
+% saveas(f,'AM_controlActions.png');
 
 figure;
 Star.plotBoxes_2D(cont_inps,3,4,'b');
 hold on;
 plot(control_inputs(3,:),control_inputs(4,:),'r');
 title('Control Inputs 3-4');
-saveas(f,'AM_controlInpus.png');
+% saveas(f,'AM_controlInpus.png');
 
 figure;
 Star.plotBoxes_2D(cont_inps,1,2,'b');
 hold on;
 plot(control_inputs(1,:),control_inputs(2,:),'--r');
 title('Control Inputs 1 - 2');
-saveas(f,'AM_controlInpus12.png');
+% saveas(f,'AM_controlInpus12.png');
 
 
 %% Helper Functions
