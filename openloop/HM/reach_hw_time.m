@@ -26,11 +26,18 @@ out_mat = [1 0 0 0; 0 1 0 0];
 % tfinal = T*1800;
 % mfac = 1800;
 % mfac = 800;
-% mfac = 790;
+mfac = 790;
 % mfac = 800;
 % tfinal = T*mfac;
-controlPeriod = tfinal(4);
+% controlPeriod = tfinal(4);
+controlPeriod = 0.011667;
+tfinal = controlPeriod;
 yC = 1;
+
+i_lb = 0; % lower bound current
+v_lb = 0; % lower bound voltage
+i_ub = 0.2; % upper bound current
+v_ub = 0.2; % upper bound voltage
 
 lb = [i_lb;v_lb;0;0];
 ub = [i_ub;v_ub;0;0];
@@ -42,7 +49,7 @@ HA.set_timeStep(reachStep); % reachability step
 %%%%%%%%%%%%%%%% Simulation %%%%%%%%%%%%%%%%%%%
 % Sim (CORA)
 % n_sim = 100;
-% n_sim = 1;
+n_sim = 1;
 Nt = nSteps*mfac+1;
 X0s = lb'+rand(n_sim,dim).*(ub'-lb'); % Set of random initial points to simulate
 sim1 = zeros(n_sim,dim,Nt); % Store all simulation data
@@ -57,6 +64,54 @@ for j=1:n_sim
 end
 tsim = toc(t);
 disp('Finish Simulation in '+string(tsim)+' seconds');
+
+% Plot only simulation
+timeV = 0:reachStep:tfinal;
+t = tic;
+f = figure('visible','off');
+hold on;
+for p=1:n_sim
+    temp = simcell{p};
+    for i=1:length(temp)
+        temp2 = temp{i};
+        plot(temp2(:,1),temp2(:,2),'r');
+    end
+end
+hold on;
+xlabel('i')
+ylabel('V');
+title('Hybrid');
+saveas(f,'reachHM_hw_time_simulation.png');
+
+f = figure('visible','off');
+hold on;
+for p=1:n_sim
+    temp = simcell{p};
+    for i=1:length(temp)
+        temp2 = temp{i};
+        plot(temp2(:,4),temp2(:,1),'r');
+    end
+end
+hold on;
+xlabel('Time (s)')
+ylabel('V');
+title('Hybrid');
+saveas(f,'reachHM_hw_timeI_simulation.png');
+f = figure('visible','off');
+hold on;
+for p=1:n_sim
+    temp = simcell{p};
+    for i=1:length(temp)
+        temp2 = temp{i};
+        plot(temp2(:,4),temp2(:,2),'r');
+    end
+end
+hold on;
+xlabel('Time (s)')
+ylabel('V');
+title('Hybrid');
+saveas(f,'reachHM_hw_timeV_simulation.png');
+tviz = toc(t);
 %%
 %%%%%%%%%%%%%%%  Reachability  %%%%%%%%%%%%%%%%%
 % HA.set_tFinal(tfinal); % set control period

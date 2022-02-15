@@ -25,8 +25,10 @@ D = [0;0];
 % Create plant
 %controlPeriod =0.05;
 %nSteps = 500;
-controlPeriod = tfinal(3);
-nSteps = rSteps(3);
+% controlPeriod = tfinal(3);
+controlPeriod = 0.011667;
+% nSteps = rSteps(3);
+nSteps = 1000;
 reachStep = controlPeriod/nSteps;
 Plant = LinearODE(A_avg, B_avg, outC, D, controlPeriod,nSteps); % Linear ODE plant
 plant_cora = LinearODE_cora(A_avg, B_avg, outC, D, reachStep, controlPeriod); % LinearODE cora plant
