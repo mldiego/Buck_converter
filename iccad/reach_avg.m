@@ -48,16 +48,17 @@ plant_cora = LinearODE_cora(A_avg, B_avg, C, D, reachStep, controlPeriod); % Lin
 
 %% Define reachability parameters
 
-N = 50; % Number of control steps to simulate the system
+% N = 50; % Number of control steps to simulate the system
+N = 15;
 
 lb = [0.1;0.1];
-ub = [0.2;0.2];
+ub = [0.11;0.11];
 
 %% Simulation 
 
 % Sim (CORA)
 % n_sim = 100; % Number of simulations
-n_sim = 1;
+n_sim = 100;
 step_sim = N; % Number of simulation steps
 X0s = lb'+rand(n_sim,2).*(ub'-lb'); % Set of random initial points to simulate
 t = 0;
@@ -96,6 +97,7 @@ reachSet = [init_set];
 reachAll = [];
 cont_reach = [];
 cont_inps = [];
+t = tic;
 for i=1:N
     inNN = input_to_Controller(Vref,init_set);
     cont_inps = [cont_inps inNN]; % Store controller inputs
@@ -113,6 +115,7 @@ for i=1:N
     end
 end
 reachAll = [reachAll init_set]; % Add last reach set
+toc(t);
 
 %% Visualize results (1)
 
